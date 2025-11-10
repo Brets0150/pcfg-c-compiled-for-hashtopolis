@@ -36,6 +36,7 @@
 struct program_info {
     int debug;                // The -d flag
     char *rule_name;          // The rule name, -r
+    char *rules_directory;    // The rules directory, -R (optional)
     char *version;
     char *min_supported_version; // The oldedst supported ruleset
 };

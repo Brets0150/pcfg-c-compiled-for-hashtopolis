@@ -177,13 +177,19 @@ int get_key(char *filename, char *section, char *key, char *result) {
             
             // Found the key name
             if (strncmp(key_name, buff, key_len) == 0) {
-              
+
                 //Copy the result minus the key name to result
                 strncpy(result, buff + key_len, MAX_CONFIG_LINE);
-                
-                //strip off the trailing newlines and return success
-                int result_len = strnlen(result,MAX_CONFIG_LINE);
-                result[result_len-2] = '\0';
+
+                //strip off the trailing whitespace/newlines and return success
+                int result_len = strnlen(result, MAX_CONFIG_LINE);
+                // Remove trailing whitespace characters (newline, carriage return, spaces, tabs)
+                while (result_len > 0 &&
+                       (result[result_len-1] == '\n' || result[result_len-1] == '\r' ||
+                        result[result_len-1] == ' ' || result[result_len-1] == '\t')) {
+                    result_len--;
+                }
+                result[result_len] = '\0';
                 fclose(config);
                 return 0;
             }

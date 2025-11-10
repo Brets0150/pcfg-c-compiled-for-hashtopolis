@@ -35,6 +35,7 @@ const char *argp_program_version = VERSION;
 static struct argp_option options[] =
 {
     {"rule_name",  'r', "OUTFILE", 0, "The ruleset to use. Default is: 'Default'"},
+    {"rules_directory", 'R', "DIR", 0, "The base directory containing rules. Default is: '<executable_dir>/Rules'"},
     {"debug", 'd', 0, 0, "Prints out debugging info vs guesses."},
     {0}
 };
@@ -51,6 +52,9 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state){
             break;
         case 'r':
             program_info->rule_name = arg;
+            break;
+        case 'R':
+            program_info->rules_directory = arg;
             break;
         default:
             return ARGP_ERR_UNKNOWN;
@@ -75,14 +79,15 @@ static struct argp argp = {options, parse_opt, args_doc, doc};
 
 
 int parse_command_line(int argc, char **argv, struct program_info *program_info) {
-	
+
     // Set argument defaults
     program_info->rule_name = "Default";
+    program_info->rules_directory = NULL;  // NULL means use default relative to executable
     program_info->debug = 0;
     program_info->version = VERSION;
     program_info->min_supported_version = MIN_SUPPORTED_VERSION;
-    
+
     argp_parse(&argp, argc, argv, 0, 0, program_info);
-    
+
     return 0;
 }

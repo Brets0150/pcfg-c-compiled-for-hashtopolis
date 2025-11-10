@@ -275,31 +275,47 @@ int load_terminal(char *config_filename, char *base_directory, char *structure, 
 //
 int load_grammar(char *arg_exec, struct program_info program_info, PcfgGrammar *pcfg) {
     
-    // Directory the executable is running in
-    // Adding in a plus 1 to PATH_MAX to deal with a potential edge case
-    // when formatting this to represent the directory. Should never happen
-    // but still...
-    char exec_directory[PATH_MAX + 1];
-    strncpy(exec_directory, arg_exec, PATH_MAX);
-    
-    // Hate doing it this way but haven't found a good way to get the directory
-    char *tail_slash = strrchr(exec_directory, SLASH);
-    
     // Holds the return value of function calls
     int ret_value;
-    
-    // Using the current directory
-    if (tail_slash == NULL) {
-        snprintf(exec_directory, PATH_MAX, ".%c", SLASH);
-    }
-    // Using a directory passed in via argv[0]
-    else {   
-        tail_slash[1]= '\0';
-    }
-    
+
     // Create the base directory to load the rules from
     char base_directory[FILENAME_MAX];
-    snprintf(base_directory, FILENAME_MAX, "%sRules%c%s%c", exec_directory,  SLASH, program_info.rule_name, SLASH);
+
+    // If a custom rules directory was specified, use it
+    if (program_info.rules_directory != NULL) {
+        // Use the user-specified rules directory
+        // Add trailing slash if not present
+        int rules_dir_len = strnlen(program_info.rules_directory, FILENAME_MAX - 1);
+        if (rules_dir_len > 0 && program_info.rules_directory[rules_dir_len - 1] == SLASH) {
+            snprintf(base_directory, FILENAME_MAX, "%s%s%c", program_info.rules_directory, program_info.rule_name, SLASH);
+        }
+        else {
+            snprintf(base_directory, FILENAME_MAX, "%s%c%s%c", program_info.rules_directory, SLASH, program_info.rule_name, SLASH);
+        }
+    }
+    else {
+        // Use default: relative to executable directory
+        // Directory the executable is running in
+        // Adding in a plus 1 to PATH_MAX to deal with a potential edge case
+        // when formatting this to represent the directory. Should never happen
+        // but still...
+        char exec_directory[PATH_MAX + 1];
+        strncpy(exec_directory, arg_exec, PATH_MAX);
+
+        // Hate doing it this way but haven't found a good way to get the directory
+        char *tail_slash = strrchr(exec_directory, SLASH);
+
+        // Using the current directory
+        if (tail_slash == NULL) {
+            snprintf(exec_directory, PATH_MAX, ".%c", SLASH);
+        }
+        // Using a directory passed in via argv[0]
+        else {
+            tail_slash[1]= '\0';
+        }
+
+        snprintf(base_directory, FILENAME_MAX, "%sRules%c%s%c", exec_directory,  SLASH, program_info.rule_name, SLASH);
+    }
     
     fprintf(stderr, "Loading Ruleset:%s\n",base_directory);
     
