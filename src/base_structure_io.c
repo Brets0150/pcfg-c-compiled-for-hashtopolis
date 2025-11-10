@@ -22,6 +22,7 @@
 //
 
 #include "base_structure_io.h"
+#include "global_def.h"
 
 
 // Splits up a base structure string, and allocates an array of BaseReplace
@@ -286,15 +287,19 @@ int load_base_structures(char *config_filename, char *base_directory, PcfgBase *
     char section_folder[MAX_CONFIG_LINE];
     
     if (get_key(config_filename, "START", "directory", section_folder) != 0) {
-        fprintf(stderr, "Could not get folder name for section. Exiting\n");
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Could not get folder name for section. Exiting\n");
+        }
         return 1;
     }
-    
+
     // Get the filenames associated with the structure
     char result[256][MAX_CONFIG_ITEM];
     int list_size;
     if (config_get_list(config_filename, "START", "filenames", result, &list_size, 256) != 0) {
-        fprintf(stderr, "Error reading the config for a rules file. Exiting\n");
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Error reading the config for a rules file. Exiting\n");
+        }
         return 1;
 	}
     
@@ -314,9 +319,11 @@ int load_base_structures(char *config_filename, char *base_directory, PcfgBase *
     
     // Check to make sure the file opened correctly
     if (fp== NULL) {
-        
+
         //Could not open the file. Print error and return an error
-        fprintf(stderr, "Error. Could not read the file: %s\n",filename);
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Error. Could not read the file: %s\n",filename);
+        }
         return 1;
     }
     

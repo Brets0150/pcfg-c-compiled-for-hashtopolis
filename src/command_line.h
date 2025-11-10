@@ -36,6 +36,7 @@
 struct program_info {
     int debug;                // The -d flag
     int keyspace;             // The --keyspace flag
+    int quiet;                // The -q flag (quiet mode)
     char *rule_name;          // The rule name, -r
     char *rules_directory;    // The rules directory, -R (optional)
     char *version;

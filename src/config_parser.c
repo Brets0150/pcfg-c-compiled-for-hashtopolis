@@ -24,6 +24,7 @@
 //
 
 #include "config_parser.h"
+#include "global_def.h"
 
 
 // Gets a list from a section/key combo from a config file and stores an array
@@ -126,9 +127,11 @@ int get_key(char *filename, char *section, char *key, char *result) {
     
     // Check to make sure the file opened correctly
     if (config == NULL) {
-        
+
         //Could not open the file. Print error and return an error
-        fprintf(stderr, "Error. Could not read the file: %s\n",filename);
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Error. Could not read the file: %s\n",filename);
+        }
         return 1;
     }
     

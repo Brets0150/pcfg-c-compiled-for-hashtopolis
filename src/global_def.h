@@ -7,4 +7,7 @@
 
 #define MAX_GUESS_SIZE 100 //Maximum size of a generated guess (minus 1)
 
+// Global quiet mode flag (set from command line)
+extern int g_quiet_mode;
+
 #endif

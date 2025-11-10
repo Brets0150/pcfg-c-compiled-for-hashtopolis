@@ -24,6 +24,7 @@
 //
 
 #include "grammar_io.h"
+#include "global_def.h"
 
 
 // Opens a file and actually loads the grammar for a particular terminal
@@ -42,9 +43,11 @@ PcfgReplacements* load_term_from_file(char *filename, char *type, long id) {
     
     // Check to make sure the file opened correctly
     if (fp== NULL) {
-        
+
         //Could not open the file. Print error and return an error
-        fprintf(stderr, "Error. Could not read the file: %s\n",filename);
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Error. Could not read the file: %s\n",filename);
+        }
         return NULL;
     }
     
@@ -155,7 +158,9 @@ PcfgReplacements* load_term_from_file(char *filename, char *type, long id) {
     
     // Reset the file pointer to the start of the file
     if (fseek(fp, 0, SEEK_SET) != 0) {
-        fprintf(stderr, "Error. Could not seek in: %s\n",filename);
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Error. Could not seek in: %s\n",filename);
+        }
         return NULL;
     }
     cur_pointer = terminal_pointer;
@@ -170,12 +175,16 @@ PcfgReplacements* load_term_from_file(char *filename, char *type, long id) {
         }
         
         if (split_value(buff, value, &prob) != 0) {
-            fprintf(stderr, "Error. Could not split value in rules file\n");
+            if (!g_quiet_mode) {
+                fprintf(stderr, "Error. Could not split value in rules file\n");
+            }
             return NULL;
         }
         // Sanity checking
         if (prob != cur_pointer->prob) {
-            fprintf(stderr, "Error. Probability mismatch in rules file\n");
+            if (!g_quiet_mode) {
+                fprintf(stderr, "Error. Probability mismatch in rules file\n");
+            }
             return NULL;
         }
         
@@ -208,15 +217,19 @@ int load_terminal(char *config_filename, char *base_directory, char *structure, 
     char section_folder[MAX_CONFIG_LINE];
     
     if (get_key(config_filename, structure, "directory", section_folder) != 0) {
-        fprintf(stderr, "Could not get folder name for section. Exiting\n");
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Could not get folder name for section. Exiting\n");
+        }
         return 1;
     }
-    
+
     // Get the filenames associated with the structure
     char result[256][MAX_CONFIG_ITEM];
     int list_size;
     if (config_get_list(config_filename, structure, "filenames", result, &list_size, 256) != 0) {
-        fprintf(stderr, "Error reading the config for a rules file. Exiting\n");
+        if (!g_quiet_mode) {
+            fprintf(stderr, "Error reading the config for a rules file. Exiting\n");
+        }
         return 1;
 	}
 
@@ -228,7 +241,9 @@ int load_terminal(char *config_filename, char *base_directory, char *structure, 
 
         //If there isn't a .txt, this is an invalid file
         if (end_pos == NULL) {
-            fprintf(stderr, "Invalid File name found in rules (missing extension): %s\n", result[i]);
+            if (!g_quiet_mode) {
+                fprintf(stderr, "Invalid File name found in rules (missing extension): %s\n", result[i]);
+            }
             return 1;
         }
 
@@ -239,13 +254,17 @@ int load_terminal(char *config_filename, char *base_directory, char *structure, 
         // Check to make sure it was a number
         if ((errno == EINVAL) || (errno == ERANGE))
         {
-            fprintf(stderr, "Invalid File name found in rules (strtol error): %s\n", result[i]);
+            if (!g_quiet_mode) {
+                fprintf(stderr, "Invalid File name found in rules (strtol error): %s\n", result[i]);
+            }
             return 1;
         }
 
         // Make sure the id falls within the acceptable range
         if (id <= 0) {
-            fprintf(stderr, "Invalid File name found in rules (id <= 0): %s (parsed id: %ld)\n", result[i], id);
+            if (!g_quiet_mode) {
+                fprintf(stderr, "Invalid File name found in rules (id <= 0): %s (parsed id: %ld)\n", result[i], id);
+            }
             return 1;
         }      
 
@@ -319,8 +338,10 @@ int load_grammar(char *arg_exec, struct program_info program_info, PcfgGrammar *
 
         snprintf(base_directory, FILENAME_MAX, "%sRules%c%s%c", exec_directory,  SLASH, program_info.rule_name, SLASH);
     }
-    
-    fprintf(stderr, "Loading Ruleset:%s\n",base_directory);
+
+    if (!program_info.quiet) {
+        fprintf(stderr, "Loading Ruleset:%s\n",base_directory);
+    }
     
     // Save the config file name for easy reference
     char config_filename[FILENAME_MAX];
@@ -338,49 +359,65 @@ int load_grammar(char *arg_exec, struct program_info program_info, PcfgGrammar *
     
     // Read in the alpha terminals
     if (load_terminal(config_filename, base_directory, "BASE_A", "A", pcfg->alpha) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
 
     // Read in the capitalization masks
     if (load_terminal(config_filename, base_directory, "CAPITALIZATION", "C", pcfg->capitalization) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
-    // Read in the digit terminals 
+    // Read in the digit terminals
     if (load_terminal(config_filename, base_directory, "BASE_D", "D", pcfg->digits) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
-    
-    // Read in the years terminals 
+
+    // Read in the years terminals
     if (load_terminal(config_filename, base_directory, "BASE_Y", "Y", pcfg->years) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
-    // Read in the "other" terminals 
+    // Read in the "other" terminals
     if (load_terminal(config_filename, base_directory, "BASE_O", "O", pcfg->other) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
-    
+
     // Read in the conteXt sensitive terminals
     if (load_terminal(config_filename, base_directory, "BASE_X", "X", pcfg->x) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
-    
+
     // Read in the keyboard combo terminals
     if (load_terminal(config_filename, base_directory, "BASE_K", "K", pcfg->keyboard) != 0) {
-        fprintf(stderr, "Error reading the rules file. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the rules file. Exiting\n");
+        }
         return 1;
 	}
-    
+
     // Now read in the base structures. Note, this doesn't need to be done last
     // but depending on what enhancements are done in the future it's good
     // practice to process these at the end.
     if (load_base_structures(config_filename, base_directory, &pcfg->base_structures) != 0) {
-        fprintf(stderr, "Error reading the base_structure file in the rules. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error reading the base_structure file in the rules. Exiting\n");
+        }
         return 1;
 	}
     

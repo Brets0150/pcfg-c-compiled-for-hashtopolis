@@ -26,6 +26,10 @@
 #include "pcfg_guesser.h"
 
 
+// Global quiet mode flag
+int g_quiet_mode = 0;
+
+
 void recursive_guess(PQItem *pq_item, int base_pos, char *cur_guess, int start_point) {
     
     int new_start = start_point;
@@ -106,31 +110,42 @@ int main(int argc, char *argv[]) {
         return 0;
 	}
 
+    // Set global quiet mode flag
+    g_quiet_mode = program_info.quiet;
+
     // Handle --keyspace option: output 1 and exit
     if (program_info.keyspace) {
         printf("1\n");
         return 0;
     }
 
-    // Print the startup banner
-    print_banner(program_info.version);
-    
+    // Print the startup banner (unless quiet mode)
+    if (!program_info.quiet) {
+        print_banner(program_info.version);
+    }
+
     // Create the empty grammar
     PcfgGrammar pcfg;
-    
-    
+
+
     // Intiazlie the grammar and Priority Queue
     if (load_grammar(argv[0], program_info, &pcfg) != 0) {
-        fprintf(stderr, "Error loading ruleset. Exiting\n");
+        if (!program_info.quiet) {
+            fprintf(stderr, "Error loading ruleset. Exiting\n");
+        }
         return 0;
 	}
 
-    fprintf(stderr, "Initailizing the Priority Queue\n");
+    if (!program_info.quiet) {
+        fprintf(stderr, "Initailizing the Priority Queue\n");
+    }
     priority_queue_t* pq;
 
     initialize_pcfg_pqueue(&pq, &pcfg);
-    
-    fprintf(stderr, "Starting to generate guesses\n");
+
+    if (!program_info.quiet) {
+        fprintf(stderr, "Starting to generate guesses\n");
+    }
 
     // Start generating guesses
     while (!priority_queue_empty(pq)) {
