@@ -39,6 +39,8 @@ struct program_info {
     int quiet;                // The -q flag (quiet mode)
     char *rule_name;          // The rule name, -r
     char *rules_directory;    // The rules directory, -R (optional)
+    char *skip;               // The --skip option (placeholder, not used)
+    char *limit;              // The --limit option (placeholder, not used)
     char *version;
     char *min_supported_version; // The oldedst supported ruleset
 };

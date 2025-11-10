@@ -39,6 +39,8 @@ static struct argp_option options[] =
     {"debug", 'd', 0, 0, "Prints out debugging info vs guesses."},
     {"keyspace", 'k', 0, 0, "Output keyspace size (always 1) and exit."},
     {"quiet", 'q', 0, 0, "Quiet mode - suppress all output except password guesses."},
+    {"skip", 's', "NUM", 0, "Skip NUM passwords (not implemented)."},
+    {"limit", 'l', "NUM", 0, "Limit to NUM passwords (not implemented)."},
     {0}
 };
 
@@ -63,6 +65,12 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state){
             break;
         case 'R':
             program_info->rules_directory = arg;
+            break;
+        case 's':
+            program_info->skip = arg;
+            break;
+        case 'l':
+            program_info->limit = arg;
             break;
         default:
             return ARGP_ERR_UNKNOWN;
@@ -94,6 +102,8 @@ int parse_command_line(int argc, char **argv, struct program_info *program_info)
     program_info->debug = 0;
     program_info->keyspace = 0;
     program_info->quiet = 0;
+    program_info->skip = NULL;    // Placeholder option, not used
+    program_info->limit = NULL;   // Placeholder option, not used
     program_info->version = VERSION;
     program_info->min_supported_version = MIN_SUPPORTED_VERSION;
 
