@@ -11,11 +11,3 @@ venv.bak/
 #Object files
 *.o
 *.a
-
-#Built executables
-pcfg_guesser
-
-# Ignore rulesets since I currently only plan on releasing them under the python
-# pcfg toolset
-Rules/*
-Rules/
